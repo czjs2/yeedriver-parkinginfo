@@ -3,7 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const _ = require('lodash');
 
-class Gowld extends WorkerBase{
+class ParkingInfo extends WorkerBase{
 
     initDriver(options){
         this.options = options;
@@ -59,10 +59,13 @@ class Gowld extends WorkerBase{
                 res.json({respCode:"000000",resMsg:""})
             })
 
-            this.server.listen(options.port||8124)
+            this.server.listen(this.options.port||8124)
 
         }
 
+        this.setRunningState(this.RUNNING_STATE.CONNECTED);
+
+        this.setupEvent();
     }
 
     ReadWI(mapItem,devId){
@@ -74,3 +77,5 @@ class Gowld extends WorkerBase{
     }
 
 }
+
+module.exports = new ParkingInfo();
