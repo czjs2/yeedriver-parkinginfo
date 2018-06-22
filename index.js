@@ -1,6 +1,7 @@
 const WorkerBase = require('yeedriver-base/WorkerBase');
 const express = require('express');
 const bodyParser = require('body-parser');
+const _ = require('lodash');
 
 class Gowld extends WorkerBase{
 
