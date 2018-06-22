@@ -2,6 +2,7 @@ const WorkerBase = require('yeedriver-base/WorkerBase');
 const express = require('express');
 const bodyParser = require('body-parser');
 const _ = require('lodash');
+const P = require('bluebird');
 
 class ParkingInfo extends WorkerBase{
 
@@ -22,12 +23,12 @@ class ParkingInfo extends WorkerBase{
             this.server = express();
             this.server.use(bodyParser.urlencoded({extended: false}));
             this.server.use(bodyParser.json({strict:false}));
-            this.server.all('/:type',function (req, res) {
+            this.server.all('/:type',(req, res) =>{
 
-                let mchtNo = req.params.mchtNo;
+                let mchtNo = req.body.mchtNo;
 
                 if(mchtNo){
-                    if(!this.options.sids[mchtNo]){
+                    if(this.options.sids && !this.options.sids[mchtNo]){
                         let devices = {};
                         devices[mchtNo] = {
                             uniqueId:'pi',
@@ -36,23 +37,26 @@ class ParkingInfo extends WorkerBase{
                         this.inOrEx({type: "in", devices: devices})
                     }
 
-                    switch (req.params.type){
+                    if(this.devices[mchtNo]){
+                        switch (req.params.type){
 
-                        case "car":
-                            this.devices[mchtNo]['WI1'] = parseInt(req.body.total) || 0;
-                            this.devices[mchtNo]['WI2'] = parseInt(req.body.free) || 0;
-                            this.devices[mchtNo]['WI3'] = parseInt(req.body.used) || 0;
-                            break;
-                        case "in":
-                            this.devices[mchtNo]['WI4'] = req.body;
-                            break;
-                        case "out":
-                            this.devices[mchtNo]['WI5'] = req.body;
-                            break;
-                        default:
-                            break;
+                            case "car":
+                                this.devices[mchtNo]['WI1'] = parseInt(req.body.total) || 0;
+                                this.devices[mchtNo]['WI2'] = parseInt(req.body.free) || 0;
+                                this.devices[mchtNo]['WI3'] = parseInt(req.body.used) || 0;
+                                break;
+                            case "in":
+                                this.devices[mchtNo]['WI4'] = req.body;
+                                break;
+                            case "out":
+                                this.devices[mchtNo]['WI5'] = req.body;
+                                break;
+                            default:
+                                break;
+                        }
+                        this.emit('RegRead',{devId:mchtNo ,memories:this.autoReadMaps[mchtNo]});
                     }
-                    this.emit('RegRead',{devId:mchtNo ,memories:this.autoReadMaps[mchtNo]});
+
                 }
 
                 console.log(`type:${req.params.type}   : `,req.body)
